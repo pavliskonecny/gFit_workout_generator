@@ -29,12 +29,11 @@ if __name__ == "__main__":
 
     #date_to = datetime.today()
     #date_from = date_to.replace(hour=0, minute=0, second=0) - timedelta(days=30) # it's necessary to remove the time
-    date_from = datetime(year=2022, month=11, day=13) #25.10. Todo Error when this value
-    date_to = datetime(year=2022, month=11, day=14) #26.10. Todo error when this value
+    date_from = datetime(year=2022, month=12, day=13)  # 25.10. Todo Error when this value
+    date_to = datetime(year=2022, month=12, day=14)  # 26.10. Todo error when this value
 
     print("Getting data from Google Fit...")
-    data = gf.get_data(date_from=date_from, date_to=date_to, ac_t="ya29.a0AVvZVsppfotZ3mtx7VMLq746hP-JGR9kYMuQHnXyNssJseyPUV4ntF43lPz_lZguEm3LPJVA0sZkK4w_5KQkcZX3NSTONw-LfAZriGPYacAa-xi2WUCySw-7NL3lD0BsYbMUJjTKz93sqvonPTRLl6-SeMy13yYaCgYKAWkSARASFQGbdwaIt29vnaRbC6tXDumOYZmPHg0166")
-    #data = gf.get_data(date_from=date_from, date_to=date_to)
+    data = gf.get_data(date_from=date_from, date_to=date_to)
     write_data(data)
 
     print(f"\033[94m *** DONE ***")

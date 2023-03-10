@@ -76,7 +76,18 @@ class GoogleFit:
     # derived:com.google.step_count.delta:com.google.android.gms:merge_step_deltas
     # Also somebody recommend to remove value and key "dataSourceID".
     # To specify the request visit: https://developers.google.com/fit/rest/v1/reference/users/dataset/aggregate
-    _BODY_DATA = {
+    _READ_DATA = {
+        "aggregateBy": [
+            {
+                "dataTypeName": "com.google.step_count.delta",   # steps
+                "dataSourceId": "derived:com.google.step_count.delta:com.google.android.gms:estimated_steps"
+            },
+        ],
+        "bucketByTime": {"durationMillis": 86400000},                       # it is one day exactly
+        "startTimeMillis": 1606086000000, "endTimeMillis": 1606341600000    # default value, will be replaced
+    }
+
+    _WRITE_DATA = {
         "aggregateBy": [
             {
                 "dataTypeName": "com.google.calories.expended",  # calories
@@ -84,12 +95,6 @@ class GoogleFit:
             {
                 "dataTypeName": "com.google.step_count.delta",   # steps
                 "dataSourceId": "derived:com.google.step_count.delta:com.google.android.gms:estimated_steps"
-            },
-            {
-                "dataTypeName": "com.google.distance.delta",     # distance
-            },
-            {
-                 "dataTypeName": "com.google.active_minutes",    # active minutes
             },
         ],
         "bucketByTime": {"durationMillis": 86400000},                       # it is one day exactly
@@ -125,23 +130,39 @@ class GoogleFit:
         else:
             return None
 
-    def get_data(self, date_from: datetime, date_to: datetime, ac_t="") -> dict:
+    def get_data(self, date_from: datetime, date_to: datetime) -> dict:
         # Pass the new Access Token to Credentials() to create new credentials
         # credentials = google.oauth2.credentials.Credentials(access_token)
-        if ac_t == "":
-            access_token = self._get_access_token()
-        else:
-            access_token = ac_t
-        print(access_token)
+        access_token = self._get_access_token()
+
         headers = {
             "Authorization": "Bearer {}".format(access_token),
             "Content-Type": "application/json;encoding=utf-8"
         }
 
-        self._BODY_DATA["startTimeMillis"] = GoogleFit.human_mili(date_from)
-        self._BODY_DATA["endTimeMillis"] = GoogleFit.human_mili(date_to)
+        self._READ_DATA["startTimeMillis"] = GoogleFit.human_to_mili(date_from)
+        self._READ_DATA["endTimeMillis"] = GoogleFit.human_to_mili(date_to)
 
-        response = requests.post(self._API_URL, data=json.dumps(self._BODY_DATA), headers=headers)
+        response = requests.post(self._API_URL, data=json.dumps(self._READ_DATA), headers=headers)
+
+        # result = json.loads(response.text)
+        result = response.json()
+        return result
+
+    def set_data(self, date_from: datetime, date_to: datetime, ac_t="") -> dict:
+        # Pass the new Access Token to Credentials() to create new credentials
+        # credentials = google.oauth2.credentials.Credentials(access_token)
+        access_token = self._get_access_token()
+
+        headers = {
+            "Authorization": "Bearer {}".format(access_token),
+            "Content-Type": "application/json;encoding=utf-8"
+        }
+
+        self._WRITE_DATA["startTimeMillis"] = GoogleFit.human_to_mili(date_from)
+        self._WRITE_DATA["endTimeMillis"] = GoogleFit.human_to_mili(date_to)
+
+        response = requests.post(self._API_URL, data=json.dumps(self._WRITE_DATA), headers=headers)
 
         # result = json.loads(response.text)
         result = response.json()
@@ -158,8 +179,8 @@ class GoogleFit:
         return refresh_token
 
     @staticmethod
-    def human_mili(date_time):
+    def human_to_mili(date_time):
         """
-        Convert human-readable time to miliseconds.
+        Convert human-readable time to mili seconds.
         """
         return int(time.mktime(date_time.timetuple()) * 1000)

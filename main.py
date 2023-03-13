@@ -33,7 +33,9 @@ if __name__ == "__main__":
     date_to = datetime(year=2022, month=12, day=14)  # 26.10. Todo error when this value
 
     print("Getting data from Google Fit...")
-    data = gf.get_data(date_from=date_from, date_to=date_to)
+    #data = gf.get_data(date_from=date_from, date_to=date_to)
+    #data = gf.create_data_source(date_from=date_from, date_to=date_to)
+    data = gf.set_data(date_from=date_from, date_to=date_to)
     write_data(data)
 
     print(f"\033[94m *** DONE ***")

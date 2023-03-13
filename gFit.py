@@ -61,7 +61,7 @@ class _gFitAuth:
 import requests
 import json
 import time
-from datetime import datetime
+import datetime
 import others.my_files as my_files
 
 
@@ -88,17 +88,22 @@ class GoogleFit:
     }
 
     _WRITE_DATA = {
-        "aggregateBy": [
-            {
-                "dataTypeName": "com.google.calories.expended",  # calories
-            },
-            {
-                "dataTypeName": "com.google.step_count.delta",   # steps
-                "dataSourceId": "derived:com.google.step_count.delta:com.google.android.gms:estimated_steps"
-            },
-        ],
-        "bucketByTime": {"durationMillis": 86400000},                       # it is one day exactly
-        "startTimeMillis": 1606086000000, "endTimeMillis": 1606341600000    # default value, will be replaced
+            "dataSourceId": "derived:com.google.step_count.delta:1099052750196:Example Manufacturer:ExampleTablet:1000001",
+            "maxEndTimeNs": 1661991000000,
+            "minStartTimeNs": 1661991000000,
+            "point": [
+                {
+                    "dataTypeName": "com.google.step_count.delta",
+                    "endTimeNanos": 1661991000000,
+                    "originDataSourceId": "",
+                    "startTimeNanos": 1661987400000,
+                    "value": [
+                        {
+                            "intVal": 2000
+                        }
+                    ]
+                }
+            ]
     }
 
     def __init__(self, client_secret_file_name: str, refresh_token: str):
@@ -140,8 +145,8 @@ class GoogleFit:
             "Content-Type": "application/json;encoding=utf-8"
         }
 
-        self._READ_DATA["startTimeMillis"] = GoogleFit.human_to_mili(date_from)
-        self._READ_DATA["endTimeMillis"] = GoogleFit.human_to_mili(date_to)
+        self._READ_DATA["startTimeMillis"] = GoogleFit.human_to_milli(date_from)
+        self._READ_DATA["endTimeMillis"] = GoogleFit.human_to_milli(date_to)
 
         response = requests.post(self._API_URL, data=json.dumps(self._READ_DATA), headers=headers)
 
@@ -159,10 +164,57 @@ class GoogleFit:
             "Content-Type": "application/json;encoding=utf-8"
         }
 
-        self._WRITE_DATA["startTimeMillis"] = GoogleFit.human_to_mili(date_from)
-        self._WRITE_DATA["endTimeMillis"] = GoogleFit.human_to_mili(date_to)
+        # self._WRITE_DATA["startTimeMillis"] = GoogleFit.human_to_milli(date_from)
+        # self._WRITE_DATA["endTimeMillis"] = GoogleFit.human_to_milli(date_to)
 
-        response = requests.post(self._API_URL, data=json.dumps(self._WRITE_DATA), headers=headers)
+        url = "https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:1099052750196:Example-Manufacturer:ExampleTablet:1000001/datasets/1661991000000-1661991000000"
+        response = requests.patch(url, data=json.dumps(self._WRITE_DATA), headers=headers)
+
+        # result = json.loads(response.text)
+        result = response.json()
+        return result
+
+    def create_data_source(self, date_from: datetime, date_to: datetime, ac_t="") -> dict:
+        # Pass the new Access Token to Credentials() to create new credentials
+        # credentials = google.oauth2.credentials.Credentials(access_token)
+        access_token = self._get_access_token()
+
+        headers = {
+            "Authorization": "Bearer {}".format(access_token),
+            "Content-Type": "application/json;encoding=utf-8"
+        }
+
+        data = {
+          "dataStreamName": "MyDataSource",
+          "type": "derived",
+          "application": {
+            "detailsUrl": "http://example.com",
+            "name": "Foo Example App",
+            "version": "1"
+          },
+          "dataType": {
+            "field": [
+              {
+                "name": "steps",
+                "format": "integer"
+              }
+            ],
+            "name": "com.google.step_count.delta"
+          },
+          "device": {
+            "manufacturer": "Example Manufacturer",
+            "model": "ExampleTablet",
+            "type": "tablet",
+            "uid": "1000001",
+            "version": "1.0"
+          }
+        }
+
+        # self._WRITE_DATA["startTimeMillis"] = GoogleFit.human_to_milli(date_from)
+        # self._WRITE_DATA["endTimeMillis"] = GoogleFit.human_to_milli(date_to)
+
+        url = "https://www.googleapis.com/fitness/v1/users/me/dataSources"
+        response = requests.post(url, data=json.dumps(data), headers=headers)
 
         # result = json.loads(response.text)
         result = response.json()
@@ -179,8 +231,15 @@ class GoogleFit:
         return refresh_token
 
     @staticmethod
-    def human_to_mili(date_time):
+    def human_to_milli(date_time):
         """
         Convert human-readable time to mili seconds.
         """
         return int(time.mktime(date_time.timetuple()) * 1000)
+
+    @staticmethod
+    def milli_tu_human(duration_in_ms: int):
+        """
+        Convert human-readable time to mili seconds.
+        """
+        return datetime.datetime.fromtimestamp(duration_in_ms / 1000.0).strftime('%D %H:%M:%S.%f')[:-3]

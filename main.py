@@ -27,13 +27,13 @@ if __name__ == "__main__":
 
     gf = GoogleFit(CLIENT_SECRET_FILE, gf_refresh_token)
 
-    start_time = datetime(year=2023, month=1, day=1, hour=5)
-    end_time = datetime(year=2023, month=1, day=1, hour=6)
+    start_time = datetime(year=2023, month=3, day=1, hour=5)
+    end_time = datetime(year=2023, month=3, day=1, hour=6)
 
     print("Getting data from Google Fit...")
     # data = gf.get_data(start_time=start_time, end_time=end_time)
     # data = gf.create_data_source(start_time=start_time, end_time=end_time)
-    data = gf.set_data(start_time=start_time, end_time=end_time)
+    data = gf.set_data(start_time=start_time, end_time=end_time, steps=2000)
     write_data(data)
 
     print(f"\033[94m *** DONE ***")

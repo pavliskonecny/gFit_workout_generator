@@ -99,7 +99,7 @@ class GoogleFit:
                     "startTimeNanos": 1662004800000000000,
                     "value": [
                         {
-                            "intVal": 3000
+                            "intVal": 0
                         }
                     ]
                 }
@@ -154,7 +154,7 @@ class GoogleFit:
         result = response.json()
         return result
 
-    def set_data(self, start_time: datetime, end_time: datetime) -> dict:
+    def set_data(self, start_time: datetime, end_time: datetime, steps: int) -> dict:
         # Pass the new Access Token to Credentials() to create new credentials
         # credentials = google.oauth2.credentials.Credentials(access_token)
         access_token = self._get_access_token()
@@ -170,6 +170,7 @@ class GoogleFit:
         self._WRITE_DATA["maxEndTimeNs"] = end_time_milli * one_mill
         self._WRITE_DATA["point"][0]["startTimeNanos"] = start_time_milli * one_mill
         self._WRITE_DATA["point"][0]["endTimeNanos"] = end_time_milli * one_mill
+        self._WRITE_DATA["point"][0]["value"][0]["intVal"] = steps
 
         url = f"https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:1099052750196:Example Manufacturer:ExampleTablet:1000001:MyDataSource/datasets/{start_time_milli}-{end_time_milli}"
         response = requests.patch(url, data=json.dumps(self._WRITE_DATA), headers=headers)

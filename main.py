@@ -27,15 +27,13 @@ if __name__ == "__main__":
 
     gf = GoogleFit(CLIENT_SECRET_FILE, gf_refresh_token)
 
-    #date_to = datetime.today()
-    #date_from = date_to.replace(hour=0, minute=0, second=0) - timedelta(days=30) # it's necessary to remove the time
-    date_from = datetime(year=2022, month=12, day=13)  # 25.10. Todo Error when this value
-    date_to = datetime(year=2022, month=12, day=14)  # 26.10. Todo error when this value
+    start_time = datetime(year=2023, month=1, day=1, hour=5)
+    end_time = datetime(year=2023, month=1, day=1, hour=6)
 
     print("Getting data from Google Fit...")
-    #data = gf.get_data(date_from=date_from, date_to=date_to)
-    #data = gf.create_data_source(date_from=date_from, date_to=date_to)
-    data = gf.set_data(date_from=date_from, date_to=date_to)
+    # data = gf.get_data(start_time=start_time, end_time=end_time)
+    # data = gf.create_data_source(start_time=start_time, end_time=end_time)
+    data = gf.set_data(start_time=start_time, end_time=end_time)
     write_data(data)
 
     print(f"\033[94m *** DONE ***")

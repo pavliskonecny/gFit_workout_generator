@@ -88,18 +88,18 @@ class GoogleFit:
     }
 
     _WRITE_DATA = {
-            "dataSourceId": "derived:com.google.step_count.delta:1099052750196:Example Manufacturer:ExampleTablet:1000001",
-            "maxEndTimeNs": 1661991000000,
-            "minStartTimeNs": 1661991000000,
+            "dataSourceId": "derived:com.google.step_count.delta:1099052750196:Example Manufacturer:ExampleTablet:1000001:MyDataSource",
+            "maxEndTimeNs": 1662008400000000000,
+            "minStartTimeNs": 1662004800000000000,
             "point": [
                 {
                     "dataTypeName": "com.google.step_count.delta",
-                    "endTimeNanos": 1661991000000,
+                    "endTimeNanos": 1662008400000000000,
                     "originDataSourceId": "",
-                    "startTimeNanos": 1661987400000,
+                    "startTimeNanos": 1662004800000000000,
                     "value": [
                         {
-                            "intVal": 2000
+                            "intVal": 3000
                         }
                     ]
                 }
@@ -154,7 +154,7 @@ class GoogleFit:
         result = response.json()
         return result
 
-    def set_data(self, date_from: datetime, date_to: datetime, ac_t="") -> dict:
+    def set_data(self, start_time: datetime, end_time: datetime) -> dict:
         # Pass the new Access Token to Credentials() to create new credentials
         # credentials = google.oauth2.credentials.Credentials(access_token)
         access_token = self._get_access_token()
@@ -163,11 +163,15 @@ class GoogleFit:
             "Authorization": "Bearer {}".format(access_token),
             "Content-Type": "application/json;encoding=utf-8"
         }
+        start_time_milli = GoogleFit.human_to_milli(start_time)
+        end_time_milli = GoogleFit.human_to_milli(end_time)
+        one_mill = 1000000
+        self._WRITE_DATA["minStartTimeNs"] = start_time_milli * one_mill
+        self._WRITE_DATA["maxEndTimeNs"] = end_time_milli * one_mill
+        self._WRITE_DATA["point"][0]["startTimeNanos"] = start_time_milli * one_mill
+        self._WRITE_DATA["point"][0]["endTimeNanos"] = end_time_milli * one_mill
 
-        # self._WRITE_DATA["startTimeMillis"] = GoogleFit.human_to_milli(date_from)
-        # self._WRITE_DATA["endTimeMillis"] = GoogleFit.human_to_milli(date_to)
-
-        url = "https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:1099052750196:Example-Manufacturer:ExampleTablet:1000001/datasets/1661991000000-1661991000000"
+        url = f"https://www.googleapis.com/fitness/v1/users/me/dataSources/derived:com.google.step_count.delta:1099052750196:Example Manufacturer:ExampleTablet:1000001:MyDataSource/datasets/{start_time_milli}-{end_time_milli}"
         response = requests.patch(url, data=json.dumps(self._WRITE_DATA), headers=headers)
 
         # result = json.loads(response.text)
@@ -238,7 +242,7 @@ class GoogleFit:
         return int(time.mktime(date_time.timetuple()) * 1000)
 
     @staticmethod
-    def milli_tu_human(duration_in_ms: int):
+    def milli_to_human(duration_in_ms: int):
         """
         Convert human-readable time to mili seconds.
         """
